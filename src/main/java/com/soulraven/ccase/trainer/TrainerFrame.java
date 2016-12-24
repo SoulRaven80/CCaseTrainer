@@ -21,7 +21,6 @@ public class TrainerFrame extends JFrame {
 
     public TrainerFrame() {
         init();
-        setVisible(true);
     }
 
     private void init() {
@@ -91,32 +90,37 @@ public class TrainerFrame extends JFrame {
             cluesPanel = new JPanel();
             cluesPanel.setLayout(new BoxLayout(cluesPanel, BoxLayout.Y_AXIS));
             for (Clue clue : clues) {
-                JToggleButton comp = new JToggleButton();
-                comp.setText(clue.getText());
-                comp.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        JToggleButton source = (JToggleButton) e.getSource();
-                        if (source.isSelected()) {
-                            Component[] components = cluesPanel.getComponents();
-                            for (Component c : components) {
-                                if (JToggleButton.class.isAssignableFrom(c.getClass())) {
-                                    JToggleButton child = (JToggleButton) c;
-                                    if (child != source) {
-                                        child.setSelected(false);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
+                JToggleButton comp = buildToggleButton(clue);
                 cluesPanel.add(comp);
             }
         }
         return cluesPanel;
     }
 
+    private JToggleButton buildToggleButton(Clue clue) {
+        JToggleButton comp = new JToggleButton();
+        comp.setText(clue.getText());
+        comp.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JToggleButton source = (JToggleButton) e.getSource();
+                if (source.isSelected()) {
+                    Component[] components = cluesPanel.getComponents();
+                    for (Component c : components) {
+                        if (JToggleButton.class.isAssignableFrom(c.getClass())) {
+                            JToggleButton child = (JToggleButton) c;
+                            if (child != source) {
+                                child.setSelected(false);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        return comp;
+    }
+
     public static void main(String[] args) {
-        new TrainerFrame();
+        new TrainerFrame().setVisible(true);
     }
 }
