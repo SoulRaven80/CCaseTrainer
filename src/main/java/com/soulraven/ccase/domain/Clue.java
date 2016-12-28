@@ -3,12 +3,23 @@ package com.soulraven.ccase.domain;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import javax.persistence.*;
 import java.awt.Point;
 
+@Entity
+@Table(name = "clues")
 public class Clue {
 
+    @Id
+    @GeneratedValue(generator = "system-uuid")
+//    @GenericGenerator(name = "system-uuid", strategy = "uuid")
+    @Column(name = "clue_id", nullable=false)
+    private long id;
+    @Column(name = "level", nullable=false)
     private int level;
+    @Column(name = "text", nullable=false)
     private String text;
+    @Column(name = "location", nullable=true)
     private Point location;
 
     public Clue(int level, String text) {
@@ -69,10 +80,6 @@ public class Clue {
 
     @Override
     public String toString() {
-        return "Clue{" +
-                "level=" + level +
-                ", text='" + text + '\'' +
-                ", location=" + location +
-                '}';
+        return text + ", " + ((location == null) ? "? : ?" : location.x + " : " + location.y);
     }
 }

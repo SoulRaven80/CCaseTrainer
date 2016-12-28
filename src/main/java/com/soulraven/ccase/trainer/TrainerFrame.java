@@ -1,22 +1,28 @@
 package com.soulraven.ccase.trainer;
 
 import com.soulraven.ccase.data.CluesDao;
+import com.soulraven.ccase.data.CluesDaoImpl;
 import com.soulraven.ccase.domain.Clue;
+import sun.java2d.pipe.SpanIterator;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 public class TrainerFrame extends JFrame {
 
     private JLabel bgLabel;
     private JScrollPane leftPane;
-    private JPanel levelsPanel;
+    private JList levelsList;
     private JScrollPane rightPane;
-    private JPanel cluesPanel;
+    private JList cluesList;
     private List<Clue> clues;
 
     public TrainerFrame() {
@@ -24,100 +30,90 @@ public class TrainerFrame extends JFrame {
     }
 
     private void init() {
-        clues = new CluesDao().readAllClues();
+        clues = new CluesDaoImpl().getAllClues();
 
         getContentPane().setLayout(new BorderLayout(2, 2));
         getContentPane().add(getBgLabel(), BorderLayout.CENTER);
         getContentPane().add(getLeftPane(), BorderLayout.WEST);
         getContentPane().add(getRightPane(), BorderLayout.EAST);
-//        getContentPane().add(getRightPanel(), BorderLayout.EAST);
 
         pack();
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
-    public JLabel getBgLabel() {
+    private JLabel getBgLabel() {
         if (bgLabel == null) {
             bgLabel = new JLabel();
             bgLabel.setIcon(new ImageIcon("1.png"));
+            bgLabel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (getCluesList().getSelectedIndex() != -1) {
+                        Clue c = (Clue) getCluesList().getSelectedValue();
+                        c.setLocation(new Point(e.getX(), e.getY()));
+                        getCluesList().repaint();
+                    }
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    super.mouseEntered(e);
+                }
+            });
         }
         return bgLabel;
     }
 
-    public JScrollPane getLeftPane() {
+    private JScrollPane getLeftPane() {
         if (leftPane == null) {
             leftPane = new JScrollPane();
             leftPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
             leftPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
             leftPane.setViewportBorder(new LineBorder(Color.RED));
-            leftPane.setViewportView(getLevelsPanel());
+            leftPane.setViewportView(getLevelsList());
         }
         return leftPane;
     }
 
-    public JPanel getLevelsPanel() {
-        if (levelsPanel == null) {
-            levelsPanel = new JPanel();
-            levelsPanel.setLayout(new BoxLayout(levelsPanel, BoxLayout.Y_AXIS));
-            JButton comp = new JButton();
-            comp.setText("Level 1");
-            comp.addActionListener(new ActionListener() {
+    private JList getLevelsList() {
+        if (levelsList == null) {
+            levelsList = new JList(new String[]{"Level 1", "Level 2"});
+            levelsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            levelsList.setSelectedIndex(0);
+            levelsList.addListSelectionListener(new ListSelectionListener() {
                 @Override
-                public void actionPerformed(ActionEvent e) {
-                    // save? & load new bg & clues
+                public void valueChanged(ListSelectionEvent e) {
+                    System.out.println(e.getFirstIndex());
+                    System.out.println(e.getLastIndex());
+                    if (levelsList.getSelectedIndex() == -1) {
+                        levelsList.setSelectedIndex(e.getFirstIndex());
+                        System.out.println("reverting selection");
+                    }
                 }
             });
-            levelsPanel.add(comp);
         }
-        return levelsPanel;
+        return levelsList;
     }
 
-    public JScrollPane getRightPane() {
+    private JScrollPane getRightPane() {
         if (rightPane == null) {
             rightPane = new JScrollPane();
             rightPane.setPreferredSize(new Dimension(250, 80));
             rightPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
             rightPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
             rightPane.setViewportBorder(new LineBorder(Color.BLUE));
-            rightPane.setViewportView(getCluesPanel());
+            rightPane.setViewportView(getCluesList());
         }
         return rightPane;
     }
 
-    public JPanel getCluesPanel() {
-        if (cluesPanel == null) {
-            cluesPanel = new JPanel();
-            cluesPanel.setLayout(new BoxLayout(cluesPanel, BoxLayout.Y_AXIS));
-            for (Clue clue : clues) {
-                JToggleButton comp = buildToggleButton(clue);
-                cluesPanel.add(comp);
-            }
+    private JList getCluesList() {
+        if (cluesList == null) {
+            cluesList = new JList(clues.toArray(new Clue[]{}));
+            cluesList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         }
-        return cluesPanel;
-    }
-
-    private JToggleButton buildToggleButton(Clue clue) {
-        JToggleButton comp = new JToggleButton();
-        comp.setText(clue.getText());
-        comp.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JToggleButton source = (JToggleButton) e.getSource();
-                if (source.isSelected()) {
-                    Component[] components = cluesPanel.getComponents();
-                    for (Component c : components) {
-                        if (JToggleButton.class.isAssignableFrom(c.getClass())) {
-                            JToggleButton child = (JToggleButton) c;
-                            if (child != source) {
-                                child.setSelected(false);
-                            }
-                        }
-                    }
-                }
-            }
-        });
-        return comp;
+        return cluesList;
     }
 
     public static void main(String[] args) {
